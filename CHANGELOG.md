@@ -6,6 +6,9 @@ All notable changes are documented here. Format loosely follows [Keep a Changelo
 
 > Development identity: `v2.17.0-dev.1`. Not a stable release.
 
+### Added
+- **Walkthrough panel.** All five diagram types accept an optional `meta.walkthrough`: up to forty reader-paced steps with prose, notes, state chips, and the authored nodes and relationships each step highlights. The Viewer opens it beside the stage (toolbar button, `W`, or `#walk=<id>`), dims everything the step does not name, rides looping carriers along every active relationship while `flow` is `continuous`, yields Story/Route/Lens/Focus, and downloads every step as Markdown from the panel or the Export menu; SVG and PNG remain the ordinary Export formats. References are validated against authored nodes and relationships (`walkthrough/invalid`), canonical SVG bytes are unchanged, and Export Cleanup strips all walkthrough state. New packaged example `queue-pipeline.sequence.json`.
+
 ### Fixed
 - **DSH plugin refresh.** Adapter 0.2.0 pins the current Archify development snapshot, includes the newer runtime and CLI fixes, and targets DSH 0.1.2-rc.1. Release metadata replaces the frozen 0.1.0 packaging source; the tarball uses the canonical clean-Skill stager and documents independent plugin upgrades.
 - **Machine-readable CLI argument failures (#330).** `validate --json` and `deliver --json` now keep invalid or missing option values, unknown options and diagram types, unsupported option combinations, and usage errors inside one versioned failure receipt on stdout. These failures use the `arguments` stage, stable diagnostic codes, and exit status 2, while human-mode stderr behavior remains unchanged.

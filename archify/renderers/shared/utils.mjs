@@ -108,6 +108,7 @@ const SUBTITLE_SLOT_RE = /^([ \t]*)<p class="subtitle">\[Subtitle description\]<
 const GUIDED_VIEWS_PLACEHOLDER = '<!-- ARCHIFY:GUIDED_VIEWS_DATA -->';
 const SOURCE_EVIDENCE_PLACEHOLDER = '    <!-- ARCHIFY:SOURCE_EVIDENCE_DATA -->';
 const I18N_PLACEHOLDER = '    <!-- ARCHIFY:I18N_DATA -->';
+const WALKTHROUGH_PLACEHOLDER = '    <!-- ARCHIFY:WALKTHROUGH_DATA -->';
 
 function serializeScriptJson(value) {
   return JSON.stringify(value)
@@ -131,6 +132,7 @@ export function applyTemplate(template, {
   locale,
   visualPreset = 'classic',
   guidedViews = [],
+  walkthrough = null,
   sourceEvidence = null,
 }) {
   if (!SVG_SLOT_RE.test(template)) {
@@ -156,6 +158,7 @@ export function applyTemplate(template, {
   // Function replacers: a literal `$&`, `$'`, `$\`` or `$$` in titles, labels,
   // or rendered SVG must not be interpreted as a replacement pattern.
   const guidedViewsJson = serializeScriptJson(guidedViews);
+  const walkthroughJson = serializeScriptJson(walkthrough);
   const sourceEvidenceJson = serializeScriptJson(sourceEvidence);
   const resolvedLocale = resolveLocale(locale);
   const i18nJson = serializeScriptJson({ locale: resolvedLocale, messages: viewerCatalog(resolvedLocale) });
@@ -176,7 +179,13 @@ export function applyTemplate(template, {
       : '')
     .replace(SVG_SLOT_RE, () => svg)
     .replace(CARDS_SLOT_RE, () => cards)
-    .replace(GUIDED_VIEWS_PLACEHOLDER, () => `<script id="archify-guided-views-data" type="application/json">${guidedViewsJson}</script>`)
+    .replace(GUIDED_VIEWS_PLACEHOLDER, () => `<script id="archify-guided-views-data" type="application/json">${guidedViewsJson}</script>${
+      walkthrough && !templateWithI18n.includes(WALKTHROUGH_PLACEHOLDER)
+        ? `\n    <script id="archify-walkthrough-data" type="application/json">${walkthroughJson}</script>`
+        : ''}`)
+    .replace(WALKTHROUGH_PLACEHOLDER, () => walkthrough
+      ? `    <script id="archify-walkthrough-data" type="application/json">${walkthroughJson}</script>`
+      : '')
     .replace(SOURCE_EVIDENCE_PLACEHOLDER, () => sourceEvidence
       ? `    <script id="archify-source-evidence-data" type="application/json">${sourceEvidenceJson}</script>`
       : '');

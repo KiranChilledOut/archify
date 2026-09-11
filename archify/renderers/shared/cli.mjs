@@ -23,6 +23,7 @@ export function loadDiagram({ rendererDir, diagramType, defaultExample, argv = p
   validateSchema(diagramType, diagram);
   validateGuidedViews(diagramType, diagram);
   validateRelationshipIds(diagramType, diagram);
+  validateWalkthrough(diagramType, diagram);
   validateEngineeringProfile(diagramType, diagram);
   const sourceEvidence = verifyRepositoryEvidence(diagramType, diagram, process.env.ARCHIFY_REPO_ROOT);
   const template = fs.readFileSync(path.join(skillRoot, 'assets/template.html'), 'utf8');
@@ -63,6 +64,7 @@ export function writeDiagram({ outPath, template, diagramType, meta, svg, cards,
     locale: meta.locale,
     visualPreset: meta.visual_preset || 'classic',
     guidedViews: meta.views || [],
+    walkthrough: meta.walkthrough || null,
     sourceEvidence,
   }));
   outputPathGuards.delete(outPath);
@@ -141,6 +143,63 @@ export function validateGuidedViews(diagramType, diagram) {
     throwDiagnosticProblems('Guided view validation failed', problems, {
       code: 'guided-view/invalid',
       subject: { diagramType, collection: 'meta.views' },
+    });
+  }
+}
+
+// A walkthrough is authored prose that points at existing semantic nodes and
+// relationships. JSON Schema bounds each step; this pass checks the facts that
+// span collections so every renderer, including the standalone-validator path,
+// rejects a step that names a node or relationship the diagram does not have.
+// Relationship references are either an authored relationship `id` or a
+// `from~to` pair whose endpoints exist and are directly connected.
+export function validateWalkthrough(diagramType, diagram) {
+  const walkthrough = diagram.meta?.walkthrough;
+  if (!walkthrough || !Array.isArray(walkthrough.steps) || walkthrough.steps.length === 0) return;
+  const semanticCollection = SEMANTIC_COLLECTIONS[diagramType];
+  const relationshipCollection = RELATIONSHIP_COLLECTIONS[diagramType];
+  const semanticIds = new Set((diagram[semanticCollection] || []).map((item) => item.id));
+  const relationships = Array.isArray(diagram[relationshipCollection]) ? diagram[relationshipCollection] : [];
+  const relationshipIds = new Set(relationships
+    .map((relationship) => relationship.id)
+    .filter((id) => id !== undefined && id !== null && id !== ''));
+  const pairs = new Set(relationships.map((relationship) => `${relationship.from}~${relationship.to}`));
+  const seenSteps = new Set();
+  const problems = [];
+
+  walkthrough.steps.forEach((step, index) => {
+    const base = `/meta/walkthrough/steps/${index}`;
+    if (seenSteps.has(step.id)) problems.push(`${base}/id duplicates step id ${JSON.stringify(step.id)}`);
+    seenSteps.add(step.id);
+    for (const field of ['focus', 'dim']) {
+      const seen = new Set();
+      (step[field] || []).forEach((id, itemIndex) => {
+        if (seen.has(id)) problems.push(`${base}/${field}/${itemIndex} duplicates semantic id ${JSON.stringify(id)}`);
+        seen.add(id);
+        if (!semanticIds.has(id)) problems.push(`${base}/${field}/${itemIndex} references unknown semantic id ${JSON.stringify(id)}`);
+      });
+    }
+    const seenEdges = new Set();
+    (step.edges || []).forEach((reference, edgeIndex) => {
+      if (seenEdges.has(reference)) problems.push(`${base}/edges/${edgeIndex} duplicates relationship reference ${JSON.stringify(reference)}`);
+      seenEdges.add(reference);
+      if (reference.includes('~')) {
+        const [from, to] = reference.split('~');
+        if (!semanticIds.has(from) || !semanticIds.has(to)) {
+          problems.push(`${base}/edges/${edgeIndex} references unknown endpoint in ${JSON.stringify(reference)}`);
+        } else if (!pairs.has(reference)) {
+          problems.push(`${base}/edges/${edgeIndex} references ${JSON.stringify(reference)} but no ${relationshipCollection} entry connects ${JSON.stringify(from)} to ${JSON.stringify(to)}`);
+        }
+      } else if (!relationshipIds.has(reference)) {
+        problems.push(`${base}/edges/${edgeIndex} references unknown relationship id ${JSON.stringify(reference)} — use an authored ${relationshipCollection}[].id or a from~to pair`);
+      }
+    });
+  });
+
+  if (problems.length) {
+    throwDiagnosticProblems('Walkthrough validation failed', problems, {
+      code: 'walkthrough/invalid',
+      subject: { diagramType, collection: 'meta.walkthrough' },
     });
   }
 }

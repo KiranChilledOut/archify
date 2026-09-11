@@ -7,6 +7,7 @@ motion mode and ownership, `node-finder.js` for node search and endpoint picking
 `intent-trace.js` for hover/focus previews, `semantic-lens.js` for type selection
 and legend previews, `route-probe.js` for directed paths and Route Journey,
 `guided-views.js` for authored chapters and Story playback,
+`walkthrough.js` for the reader-paced step panel, looping carriers and Markdown export,
 `focus.js` for semantic selection, relationships, reachability and shared flow tokens,
 `export.js` for export menus, serialization, images, cards, clipboard and WebM,
 `export-cleanup.js` for its private SVG clone cleanup, and
@@ -341,6 +342,41 @@ Camera receipt, visibility and clipboard fixtures expose specific edge cases;
 real Camera, input, animation and complete playback are also exercised. Fixtures
 are not evidence for OS clipboard permission, background throttling or arbitrary
 screen/content collision freedom.
+
+## Walkthrough contract
+
+The complete IIFE initializes once after Guided Views and before Reader/Chrome
+Layout/Camera, in classic-script scope. It reads `#archify-walkthrough-data`,
+requires the `.container` shell, the diagram SVG, the `#walkthrough` panel and
+`#btn-walkthrough`; with no steps it hides the trigger and menu item and returns
+only `count: 0`, `active` and `isOpen`. With steps the interface is `count` plus
+`isOpen`, `open`, `close`, `toggle`, `go`, `next`, `prev`, `active`, `markdown`,
+`downloadMarkdown` and `refreshFlow`.
+
+- Walkthrough owns the open state on `.container[data-walkthrough]`, the panel
+  contents, pips, `svg[data-walkthrough-active]`, node/edge `data-walkthrough-*`
+  marks, `[data-walkthrough-carrier-overlay]` groups and one Motion Governor
+  token claimed as `walkthrough`. Focus, Route, Lens and Guided Views keep their
+  own state; activation calls their existing clear/pause/showAll interfaces
+  rather than editing their attributes.
+- Relationship references resolve only against the SVG: an authored
+  `data-edge-id`, or `from~to` matching `data-edge-from`/`data-edge-to`.
+  Carriers reuse `Archify.flowTokens.create`; continuous flow sets
+  `repeatCount="indefinite"` on the created `animateMotion` and loops the token
+  life animation through `.walkthrough-flow-token`. At most 12 relationships
+  carry tokens, two per relationship, staggered by half the period.
+- Flow is suppressed when the document is hidden, reduced motion is requested,
+  the page is embedded, printing, or the Governor is paused; a `data-motion` /
+  `data-embed` MutationObserver and visibilitychange re-evaluate it. Static
+  highlighting does not depend on motion.
+- Authored prose is inserted as text nodes; `**strong**` and `` `code` `` are the
+  only inline marks. Markdown export is a transcript of authored steps plus the
+  labels of the nodes and relationships each step resolves to; it writes
+  `data-last-walkthrough-export-bytes` and never embeds binary data.
+- Opening or closing dispatches one `resize` so Reader and Chrome Layout
+  re-measure the stage width; the panel does not own layout measurement.
+- Export Cleanup removes `data-walkthrough-active`, node/edge marks and carrier
+  overlays from the clone and includes them in its final assertion.
 
 ## Route Probe contract
 

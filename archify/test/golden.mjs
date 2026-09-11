@@ -79,6 +79,7 @@ const GOLDEN = [
   ['dataflow', 'product-analytics.dataflow.json', 'dataflow-product-analytics.html'],
   ['lifecycle', 'agent-run.lifecycle.json', 'lifecycle-agent-run.html'],
   ['architecture', 'web-app.architecture.json', 'web-app-rendered.html'],
+  ['sequence', 'queue-pipeline.sequence.json', 'sequence-queue-pipeline.html'],
 ];
 
 for (const [mode, input, golden] of GOLDEN) {

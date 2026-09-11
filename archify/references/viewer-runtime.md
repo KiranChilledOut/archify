@@ -20,6 +20,10 @@ Read this only when the user asks for a reader-facing capability. Ordinary gener
 
 Story transitions classify only the exact relationship between adjacent authored stops: forward, reverse, multiple, or grouped/no direct link. Never infer a transitive edge, verb, causality, or runtime behavior from proximity, kinds, or story order. Playback is reader-started, bounded, stale-safe, and motion-governed.
 
+## Walkthrough
+
+`meta.walkthrough` opens a reader-paced side panel beside the stage: Prev/Next, step pips, `←`/`→`/`Home`/`End` inside the panel, `W` to toggle, `Escape` to close, and `#walk=<stepId>` moment links. Activating a step yields Story, Route, Lens and Focus, marks the step's nodes and relationships with `data-walkthrough-*` reading state, dims everything else, and — while `flow` is `continuous`, the document is visible, motion is not Still and reduced motion is off — rides staggered looping carriers along every active authored relationship. `flow: "step"` runs one pass per activation; `flow: "off"` highlights without motion. The panel's Markdown button, and the Export menu item it enables, download every step (title, clock, prose, state, highlighted node and relationship labels, notes) as `<diagram>-walkthrough.md`; the SVG and PNG buttons call the ordinary Export menu. Export Cleanup removes all walkthrough state and carriers from canonical exports. Steps only ever name authored nodes and relationships; the panel never infers topology.
+
 ## Motion and presentation
 
 `meta.animation: "trace"` enables a finite reader-controlled Live/Still trace. Static is the default. Still, reduced motion, page hiding, print, and canonical export preserve complete static meaning. Presentation Stage changes viewer chrome and framing, never authored geometry. This is not a mobile product feature; narrow layouts get containment only.

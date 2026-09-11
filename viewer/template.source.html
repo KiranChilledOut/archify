@@ -2974,6 +2974,218 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       padding: 0;
     }
 
+    /* ============================================================
+       Walkthrough — reader-paced steps beside the stage.
+       The canonical SVG and its geometry never change. The panel adds
+       data-walkthrough-* reading state and viewer-only carrier overlays;
+       Export Cleanup removes both from every canonical export.
+       ============================================================ */
+    .container[data-walkthrough="open"] {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(19rem, 26rem);
+      grid-template-areas:
+        "header header"
+        "guided guided"
+        "diagram walk"
+        "cards cards";
+      column-gap: 1rem;
+      align-items: start;
+    }
+    .container[data-walkthrough="open"] > .header { grid-area: header; }
+    .container[data-walkthrough="open"] > .guided-views { grid-area: guided; }
+    .container[data-walkthrough="open"] > .diagram-container { grid-area: diagram; min-width: 0; }
+    .container[data-walkthrough="open"] > .walkthrough { grid-area: walk; }
+    .container[data-walkthrough="open"] > .cards { grid-area: cards; }
+
+    .walkthrough {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      min-width: 0;
+      padding: 1rem 1.1rem 1.1rem;
+      border: 1px solid var(--panel-border);
+      border-radius: 1rem;
+      background: var(--panel);
+      color: var(--text);
+      position: sticky;
+      top: 1rem;
+      max-height: calc(100dvh - 2rem);
+      overflow: auto;
+    }
+    .walkthrough[hidden] { display: none; }
+    html[data-preset="blueprint"] .walkthrough { border-radius: 0.35rem; }
+    .walkthrough-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+    .walkthrough-meta { display: flex; flex-wrap: wrap; gap: 0.35rem 0.8rem; align-items: baseline; }
+    .walkthrough-counter {
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--frontend-stroke);
+      font-weight: 600;
+    }
+    .walkthrough-clock { font-size: 0.72rem; color: var(--text-faint); letter-spacing: 0.04em; }
+    .walkthrough-clock[hidden] { display: none; }
+    .walkthrough-close {
+      flex: none;
+      min-width: 1.9rem;
+      min-height: 1.9rem;
+      padding: 0 0.45rem;
+      border: 1px solid var(--toolbar-border);
+      border-radius: 0.45rem;
+      background: var(--toolbar-bg);
+      color: var(--toolbar-text);
+      font: inherit;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .walkthrough-title { font-size: 0.72rem; color: var(--text-muted); }
+    .walkthrough-title[hidden] { display: none; }
+    .walkthrough-heading {
+      margin: 0;
+      font-size: 1.12rem;
+      line-height: 1.28;
+      font-weight: 700;
+      color: var(--text);
+      text-wrap: balance;
+    }
+    .walkthrough-body p { margin: 0 0 0.55rem; font-size: 0.88rem; line-height: 1.6; color: var(--text-muted); }
+    .walkthrough-body p:last-child { margin-bottom: 0; }
+    .walkthrough-body strong { color: var(--text); }
+    .walkthrough-body code {
+      font-size: 0.85em;
+      padding: 0.05em 0.3em;
+      border-radius: 0.25rem;
+      background: var(--lane-fill);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+    }
+    .walkthrough-notes { display: flex; flex-direction: column; gap: 0.5rem; }
+    .walkthrough-notes:empty { display: none; }
+    .walkthrough-note {
+      padding: 0.55rem 0.75rem;
+      border-left: 3px solid var(--frontend-stroke);
+      border-radius: 0 0.4rem 0.4rem 0;
+      background: var(--lane-fill);
+    }
+    .walkthrough-note > strong {
+      display: block;
+      margin-bottom: 0.2rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--frontend-stroke);
+    }
+    .walkthrough-note > p { margin: 0; font-size: 0.83rem; line-height: 1.55; color: var(--text-muted); }
+    .walkthrough-state { display: flex; flex-wrap: wrap; gap: 0.35rem; padding-top: 0.5rem; border-top: 1px solid var(--panel-border); }
+    .walkthrough-state[hidden] { display: none; }
+    .walkthrough-chip {
+      font-size: 0.68rem;
+      padding: 0.18rem 0.5rem;
+      border-radius: 0.3rem;
+      border: 1px solid var(--panel-border);
+      background: var(--lane-fill);
+      color: var(--text-muted);
+    }
+    .walkthrough-highlights { font-size: 0.78rem; color: var(--text-muted); }
+    .walkthrough-highlights[hidden] { display: none; }
+    .walkthrough-highlights summary { cursor: pointer; color: var(--text-faint); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .walkthrough-highlights ul { margin: 0.35rem 0 0; padding-left: 1rem; }
+    .walkthrough-highlights li { margin: 0.15rem 0; }
+    .walkthrough-nav { display: flex; align-items: center; gap: 0.45rem; padding-top: 0.5rem; border-top: 1px solid var(--panel-border); }
+    .walkthrough-step-button,
+    .walkthrough-actions button {
+      border: 1px solid var(--toolbar-border);
+      border-radius: 0.5rem;
+      background: var(--toolbar-bg);
+      color: var(--toolbar-text);
+      font: inherit;
+      cursor: pointer;
+    }
+    .walkthrough-step-button { min-width: 2.4rem; min-height: 2.4rem; font-size: 1rem; }
+    .walkthrough-step-button:disabled,
+    .walkthrough-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .walkthrough-step-button:hover:not(:disabled),
+    .walkthrough-actions button:hover:not(:disabled) { background: var(--toolbar-hover); }
+    .walkthrough-pips { display: flex; flex-wrap: wrap; gap: 0.28rem; flex: 1; justify-content: center; margin: 0; padding: 0; list-style: none; }
+    .walkthrough-pip {
+      min-width: 1.7rem;
+      min-height: 1.7rem;
+      padding: 0;
+      border: 1px solid var(--toolbar-border);
+      border-radius: 0.3rem;
+      background: transparent;
+      color: var(--text-faint);
+      font: inherit;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    .walkthrough-pip[data-state="done"] { border-color: var(--frontend-stroke); color: var(--frontend-stroke); }
+    .walkthrough-pip[aria-current="step"] { background: var(--frontend-stroke); border-color: var(--frontend-stroke); color: var(--mask); font-weight: 700; }
+    .walkthrough-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+    .walkthrough-actions button { display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; padding: 0.45rem 0.6rem; text-align: left; }
+    .walkthrough-actions button > strong { font-size: 0.74rem; }
+    .walkthrough-actions button > small { font-size: 0.64rem; color: var(--text-faint); }
+    .walkthrough-actions #walkthrough-markdown { grid-column: 1 / -1; }
+    .walkthrough-status, .walkthrough-flow { margin: 0; font-size: 0.7rem; color: var(--text-faint); min-height: 1em; }
+    .walkthrough-status:empty, .walkthrough-flow:empty { display: none; }
+
+    /* Stage state: only the step's nodes and relationships stay vivid. */
+    svg[data-walkthrough-active] [data-node-id]:not([data-walkthrough-node="on"]) {
+      opacity: 0.34;
+      transition: opacity 180ms ease;
+    }
+    svg[data-walkthrough-active] [data-node-id][data-walkthrough-node="dim"] { opacity: 0.16; }
+    svg[data-walkthrough-active] [data-node-id][data-walkthrough-node="on"] { opacity: 1; }
+    svg[data-walkthrough-active] [data-edge-from][data-edge-to]:not([data-walkthrough-edge="on"]) {
+      opacity: 0.2;
+      transition: opacity 180ms ease;
+    }
+    svg[data-walkthrough-active] [data-edge-from][data-edge-to][data-walkthrough-edge="on"] { opacity: 1; }
+    svg[data-walkthrough-active] [data-walkthrough-edge="on"] > path,
+    svg[data-walkthrough-active] [data-walkthrough-edge="on"] > line,
+    svg[data-walkthrough-active] [data-walkthrough-edge="on"] > polyline,
+    svg[data-walkthrough-active] path[data-walkthrough-edge="on"],
+    svg[data-walkthrough-active] line[data-walkthrough-edge="on"],
+    svg[data-walkthrough-active] polyline[data-walkthrough-edge="on"] {
+      stroke: var(--arrow-emphasis);
+      stroke-width: 2.4;
+      filter: drop-shadow(0 0 3px var(--arrow-emphasis));
+    }
+    .walkthrough-flow-token {
+      animation: archify-relationship-token-life var(--walkthrough-flow-duration, 1.6s) linear infinite both;
+    }
+    .walkthrough-flow-token[data-walkthrough-once] { animation-iteration-count: 1; }
+    html[data-motion="still"] .walkthrough-flow-token,
+    html[data-embed="true"] .walkthrough-flow-token { animation: none; opacity: 0; }
+
+    html[data-present="true"]:not([data-embed="true"]) .container[data-walkthrough="open"] {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      grid-template-areas:
+        "header header"
+        "guided guided"
+        "diagram walk";
+      height: calc(100dvh - 2rem);
+      align-items: stretch;
+    }
+    html[data-present="true"]:not([data-embed="true"]) .container[data-walkthrough="open"] > .walkthrough {
+      position: static;
+      max-height: none;
+      min-height: 0;
+    }
+    html[data-present="true"]:not([data-embed="true"]) .container[data-walkthrough="open"] > .diagram-container { min-height: 0; }
+    @media (max-width: 1024px) {
+      .container[data-walkthrough="open"] {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "header" "guided" "walk" "diagram" "cards";
+      }
+      .walkthrough { position: static; max-height: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .walkthrough-flow-token { animation: none; opacity: 0; }
+    }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -5036,6 +5248,14 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <span id="present-icon" class="toolbar-icon" aria-hidden="true"></span>
       <span id="present-label">{{i18n:viewer.present.present}}</span>
     </button>
+    <button id="btn-walkthrough" type="button" hidden
+            title="{{i18n:viewer.walkthrough.button.title}}"
+            aria-label="{{i18n:viewer.walkthrough.open}}"
+            aria-pressed="false"
+            aria-controls="walkthrough">
+      <span class="toolbar-icon" aria-hidden="true">&#9776;</span>
+      <span id="walkthrough-button-label">{{i18n:viewer.walkthrough.button}}</span>
+    </button>
     <div class="export-wrap">
       <button id="btn-export" type="button"
               title="{{i18n:viewer.export.button.title}}"
@@ -5057,6 +5277,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <button data-action="reach-share-card" type="button" role="menuitem" tabindex="-1" hidden disabled><span class="export-item-copy"><strong>{{i18n:viewer.export.reachShareCard}}</strong><small class="hint">1200&times;630 PNG</small></span></button>
           <button data-action="copy-share-card" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>{{i18n:viewer.export.copyShareCard}}</strong><small class="hint">{{i18n:viewer.export.clipboardPng}}</small></span></button>
           <button data-action="copy" type="button" role="menuitem" tabindex="-1"><span class="export-item-copy"><strong>{{i18n:viewer.export.copyDiagram}}</strong><small class="hint">{{i18n:viewer.export.clipboardPng}}</small></span></button>
+          <button data-action="walkthrough-markdown" type="button" role="menuitem" tabindex="-1" hidden><span class="export-item-copy"><strong>{{i18n:viewer.export.walkthroughMarkdown}}</strong><small class="hint">{{i18n:viewer.export.walkthroughMarkdown.hint}}</small></span></button>
         </div>
         <div class="export-menu-section" role="group" aria-label="{{i18n:viewer.export.raster}}">
           <span class="export-menu-heading" aria-hidden="true">{{i18n:viewer.export.image}}</span>
@@ -5089,6 +5310,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <!-- ARCHIFY:GUIDED_VIEWS_DATA -->
     <!-- ARCHIFY:SOURCE_EVIDENCE_DATA -->
     <!-- ARCHIFY:I18N_DATA -->
+    <!-- ARCHIFY:WALKTHROUGH_DATA -->
     <div class="guided-views no-print" id="guided-views" hidden aria-label="{{i18n:viewer.guided.region}}">
       <button id="guided-view-prev" type="button" aria-label="{{i18n:viewer.guided.previous}}" title="{{i18n:viewer.guided.previous.title}}">&#8592;</button>
       <div class="guided-view-copy">
@@ -5462,6 +5684,37 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       </div>
     </div>
 
+    <aside class="walkthrough no-print" id="walkthrough" hidden aria-label="{{i18n:viewer.walkthrough.region}}">
+      <div class="walkthrough-head">
+        <div class="walkthrough-meta">
+          <span class="walkthrough-counter" id="walkthrough-counter"></span>
+          <span class="walkthrough-clock" id="walkthrough-clock" hidden></span>
+        </div>
+        <button class="walkthrough-close" id="walkthrough-close" type="button" aria-label="{{i18n:viewer.walkthrough.close}}" title="{{i18n:viewer.walkthrough.close}}">&#215;</button>
+      </div>
+      <span class="walkthrough-title" id="walkthrough-title" hidden></span>
+      <h2 class="walkthrough-heading" id="walkthrough-heading"></h2>
+      <div class="walkthrough-body" id="walkthrough-body"></div>
+      <div class="walkthrough-notes" id="walkthrough-notes"></div>
+      <div class="walkthrough-state" id="walkthrough-state" hidden role="list"></div>
+      <details class="walkthrough-highlights" id="walkthrough-highlights" hidden>
+        <summary>{{i18n:viewer.walkthrough.highlights}}</summary>
+        <div id="walkthrough-highlights-body"></div>
+      </details>
+      <div class="walkthrough-nav">
+        <button class="walkthrough-step-button" id="walkthrough-prev" type="button" aria-label="{{i18n:viewer.walkthrough.previous}}" title="{{i18n:viewer.walkthrough.previous.title}}">&#8592;</button>
+        <ol class="walkthrough-pips" id="walkthrough-pips" aria-label="{{i18n:viewer.walkthrough.steps}}"></ol>
+        <button class="walkthrough-step-button" id="walkthrough-next" type="button" aria-label="{{i18n:viewer.walkthrough.next}}" title="{{i18n:viewer.walkthrough.next.title}}">&#8594;</button>
+      </div>
+      <div class="walkthrough-actions">
+        <button id="walkthrough-markdown" type="button"><strong>{{i18n:viewer.walkthrough.downloadMarkdown}}</strong><small>{{i18n:viewer.walkthrough.downloadMarkdown.hint}}</small></button>
+        <button id="walkthrough-svg" type="button"><strong>{{i18n:viewer.walkthrough.downloadSvg}}</strong></button>
+        <button id="walkthrough-png" type="button"><strong>{{i18n:viewer.walkthrough.downloadPng}}</strong></button>
+      </div>
+      <p class="walkthrough-status" id="walkthrough-status" role="status" aria-live="polite" aria-atomic="true"></p>
+      <p class="walkthrough-flow" id="walkthrough-flow" aria-live="polite"></p>
+    </aside>
+
     <!-- ARCHIFY:CARDS_SLOT_START -->
     <div class="cards">
       <div class="card">
@@ -5823,6 +6076,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 /* ARCHIFY:INTENT_TRACE */
 
 /* ARCHIFY:GUIDED_VIEWS */
+
+/* ARCHIFY:WALKTHROUGH */
 
     /* ============================================================
        Adaptive Reader Shell — one diagram across laptop and monitor.
@@ -6194,6 +6449,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       } else if (e.key === 'r' || e.key === 'R') {
         e.preventDefault();
         Archify.routeProbe.toggle({ focusNode: true });
+      } else if ((e.key === 'w' || e.key === 'W') && Archify.walkthrough && Archify.walkthrough.count) {
+        e.preventDefault();
+        Archify.walkthrough.toggle();
       } else if (e.key === '+' || e.key === '=') {
         e.preventDefault();
         Archify.view.zoomIn();
@@ -6224,6 +6482,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       } else if (e.key === 'Escape' && Archify.intentTrace.active()) {
         e.preventDefault();
         Archify.intentTrace.clear();
+      } else if (e.key === 'Escape' && Archify.walkthrough && Archify.walkthrough.isOpen()) {
+        e.preventDefault();
+        Archify.walkthrough.close({ restoreFocus: true });
       } else if (e.key === 'Escape' && Archify.focus.active()) {
         e.preventDefault();
         Archify.focus.clear({ restoreFocus: true });
