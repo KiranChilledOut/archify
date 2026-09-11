@@ -95,6 +95,69 @@
         }
       }
     },
+    "walkthroughNote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "body"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "body": { "type": "string", "minLength": 1, "maxLength": 800 }
+      }
+    },
+    "walkthroughStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "body"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "clock": { "type": "string", "maxLength": 40 },
+        "body": { "type": "string", "minLength": 1, "maxLength": 3000 },
+        "notes": {
+          "type": "array",
+          "maxItems": 6,
+          "items": { "$ref": "#/$defs/walkthroughNote" }
+        },
+        "focus": {
+          "type": "array",
+          "maxItems": 24,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "edges": {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*(~[a-zA-Z][a-zA-Z0-9_-]*)?$"
+          }
+        },
+        "dim": {
+          "type": "array",
+          "maxItems": 24,
+          "items": { "$ref": "#/$defs/id" }
+        },
+        "state": {
+          "type": "array",
+          "maxItems": 6,
+          "items": { "type": "string", "minLength": 1, "maxLength": 48 }
+        }
+      }
+    },
+    "walkthrough": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["steps"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "flow": { "enum": ["continuous", "step", "off"] },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 40,
+          "items": { "$ref": "#/$defs/walkthroughStep" }
+        }
+      }
+    },
     "cards": {
       "type": "array",
       "items": {

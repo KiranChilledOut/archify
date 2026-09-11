@@ -42,6 +42,16 @@ It may also include up to five guided `views`. Each view has a unique `id`, a
 reader-facing `label`, a non-empty `focus` list of existing semantic node IDs,
 and an optional short `note`.
 
+It may also include one optional `walkthrough`: a `title`, a `flow` of
+`continuous` (default), `step`, or `off`, and one to forty `steps`. Each step
+has a unique `id`, a `title`, a prose `body` (blank line separates paragraphs;
+`**strong**` and `` `code` `` are the only inline marks), and optional `clock`,
+`notes` (`title` + `body`), `focus` and `dim` semantic node IDs, `edges` named by
+an authored relationship `id` or a `from~to` pair, and `state` chips. The shared
+loader rejects duplicate step IDs and any reference that names a node or
+relationship the diagram does not have (`walkthrough/invalid`). The
+walkthrough is Viewer-only: it never changes the canonical SVG.
+
 ### Legend presentation contract
 
 Every `meta` object accepts the same optional legend shape without changing
@@ -145,6 +155,8 @@ The five diagram schemas reference `common.schema.json#/$defs/...`:
 - `legendMode` and `legendEntry` — the shared strict mode and label/visibility
   override shapes used by each renderer-owned key map
 - `guidedViews` — the bounded, read-only reader paths accepted by `meta.views`
+- `walkthrough`, `walkthroughStep`, `walkthroughNote` — the reader-paced
+  explanation layer accepted by `meta.walkthrough`
 - `cards` — the summary-card blocks rendered below the SVG
 
 Lifecycle state `type` is mode-specific (`start`/`active`/`waiting`/...) and

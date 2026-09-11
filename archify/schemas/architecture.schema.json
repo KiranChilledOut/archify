@@ -36,6 +36,7 @@
           }
         },
         "views": { "$ref": "common.schema.json#/$defs/guidedViews" },
+        "walkthrough": { "$ref": "common.schema.json#/$defs/walkthrough" },
         "legend": {
           "type": "object",
           "additionalProperties": false,

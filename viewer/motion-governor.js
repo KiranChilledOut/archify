@@ -75,6 +75,7 @@
         if (value === 'chapter') return viewerText('viewer.owner.chapter');
         if (value === 'chapter-preview') return viewerText('viewer.owner.chapterPreview');
         if (value === 'handoff') return viewerText('viewer.owner.handoff');
+        if (value === 'walkthrough') return viewerText('viewer.owner.walkthrough');
         if (value === 'route') return viewerText('viewer.owner.route');
         if (value === 'lens') return viewerText('viewer.owner.lens');
         if (value === 'relationship') return viewerText('viewer.owner.relationship');
@@ -142,6 +143,7 @@
         if (!svg) return '';
         if (svg.hasAttribute('data-story-playing') || svg.hasAttribute('data-story-follow')) return 'story';
         if (svg.hasAttribute('data-story-active')) return 'chapter';
+        if (svg.hasAttribute('data-walkthrough-active')) return 'walkthrough';
         if (svg.hasAttribute('data-route-picking') || svg.hasAttribute('data-route-active')) return 'route';
         if (svg.hasAttribute('data-lens-active')) return 'lens';
         if (svg.hasAttribute('data-relationship-preview-active')) return 'relationship';

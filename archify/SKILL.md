@@ -119,6 +119,8 @@ Never start preview by default. Read `references/delivery-contract.md` when usin
 
 Generated HTML already contains theme switching, pan/zoom, search, focus, relationship tracing, semantic views, presentation, and truthful exports. These are reader capabilities, not extra authoring work. `meta.animation: "trace"` is opt-in; `meta.views` is optional and should contain at most five curated chapters.
 
+`meta.walkthrough` is a second optional, reader-paced layer for explaining traffic flow: up to 40 authored steps, each with a title, prose `body`, optional `clock`, `notes`, `state` chips, the semantic `focus` node IDs it highlights, and `edges` named by authored relationship `id` or `from~to`. The Viewer opens it as a side panel (toolbar button or `W`) with Prev/Next, keeps a looping carrier on every active relationship while `flow` is `continuous`, and downloads all steps as Markdown; SVG and PNG use the ordinary Export menu. Every reference must resolve to an existing node or relationship or validation fails with `walkthrough/invalid`. Use it when the user asks for a walkthrough, step-by-step explanation, or presentation of how traffic moves; it never adds topology.
+
 Read `references/viewer-runtime.md` only when the user explicitly asks for Share Cards, Route/Reach cards, motion, guided stories, deep links, presentation, search/focus, or another Viewer Runtime feature.
 
 ## Setup and fallback

@@ -16,7 +16,7 @@ Archify is a Node.js rendering and validation system for Cursor, Claude Code, Co
 
 - **Open it and present** — five diagram types, four presets, dark/light themes, built-in brand marks, and finite motion
 - **Review architecture changes before merge** — compare two validated snapshots as Before / Delta / After, with exact added, removed, changed, moved, and rerouted facts
-- **Every interaction stays grounded** — search nodes, optionally open revision-verified source, trace upstream/downstream authored reach and exact routes, compare roles, and play guided stories without inventing topology
+- **Every interaction stays grounded** — search nodes, optionally open revision-verified source, trace upstream/downstream authored reach and exact routes, compare roles, play guided stories, and present step-by-step walkthroughs with live traffic flow and a Markdown transcript — without inventing topology
 - **One file, ready to trust and share** — typed JSON IR and deterministic checks produce self-contained HTML plus PNG, SVG, WebM, and 1200×630 share cards
 
 ![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
@@ -246,6 +246,7 @@ Settings:
 | Compare one or two semantic roles | <kbd>L</kbd> or `LENS` |
 | Open the live overview radar | <kbd>M</kbd> or `MAP` |
 | Play a guided story / change chapter | <kbd>P</kbd> / <kbd>[</kbd> <kbd>]</kbd> |
+| Walkthrough panel / step | <kbd>W</kbd> / <kbd>←</kbd> <kbd>→</kbd> |
 | Enter Presentation Stage | <kbd>F</kbd> |
 | Choose visual style (`S` cycles) / toggle theme / open Export | <kbd>S</kbd> / <kbd>T</kbd> / <kbd>E</kbd> |
 | Zoom or reset | <kbd>+</kbd> / <kbd>-</kbd> / <kbd>0</kbd> |
