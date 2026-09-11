@@ -16,7 +16,7 @@ Archify is a Node.js rendering and validation system for Cursor, Claude Code, Co
 
 - **Open it and present** — five diagram types, four presets, dark/light themes, built-in brand marks, and finite motion
 - **Review architecture changes before merge** — compare two validated snapshots as Before / Delta / After, with exact added, removed, changed, moved, and rerouted facts
-- **Every interaction stays grounded** — search nodes, optionally open revision-verified source, trace upstream/downstream authored reach and exact routes, compare roles, play guided stories, and present step-by-step walkthroughs with live traffic flow and a Markdown transcript — without inventing topology
+- **Every interaction stays grounded** — search nodes, optionally open revision-verified source, trace upstream/downstream authored reach and exact routes, compare roles, play guided stories, and present live-flow walkthroughs — without inventing topology
 - **One file, ready to trust and share** — typed JSON IR and deterministic checks produce self-contained HTML plus PNG, SVG, WebM, and 1200×630 share cards
 
 ![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
@@ -34,6 +34,8 @@ npx skills add tt-a1i/archify -g
 Using Cursor? Open the [agent-aware quick start](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture) for exact global and project commands.
 
 **No repository is required:** describe the system in any agent chat.
+
+> **Fork:** adds a Walkthrough panel — see [`customFeatures/`](customFeatures/README.md) and its [prompts](customFeatures/PROMPTS.md).
 
 ## ❤️ Sponsors
 

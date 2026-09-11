@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Queue-Driven Pipeline Stage",
+    "quality_profile": "showcase",
+    "column_fit": "spread",
+    "viewBox": [1080, 620],
+    "walkthrough": {
+      "title": "One record through a queue-driven stage",
+      "flow": "continuous",
+      "steps": [
+        {
+          "id": "wake",
+          "title": "A clock goes off, and a container is born",
+          "clock": "12:00:00",
+          "body": "Every five minutes a cron expression fires. The platform creates an **execution**, and that execution starts a **replica** — a fresh container with nothing in memory.\n\nIt fetches the source and finds one new record. Nothing downstream knows yet.",
+          "notes": [
+            { "title": "Job, execution, replica", "body": "The job is the definition. An execution is one run. A replica is the container that run starts." }
+          ],
+          "focus": ["cron", "producer"],
+          "edges": ["fire"],
+          "state": ["producer running", "queue untouched"]
+        },
+        {
+          "id": "knock",
+          "title": "It knocks on a queue and walks away",
+          "clock": "12:00:01",
+          "body": "The producer sends **one message** to the stage queue. The message does not carry the record — only that work exists. The data stays in the store.\n\nThen the producer exits.",
+          "notes": [
+            { "title": "Queue, message, topic", "body": "A queue is the mailbox, a message is one letter in it. A topic would photocopy the letter to many subscribers; this chain uses none." }
+          ],
+          "focus": ["producer", "queue"],
+          "edges": ["enqueue"],
+          "dim": ["cron"],
+          "state": ["1 message, invisible for 30s"]
+        },
+        {
+          "id": "poll",
+          "title": "Something has to be looking",
+          "clock": "12:00:31",
+          "body": "A visible message summons nobody. The queue is a passive mailbox. Every thirty seconds the scaler asks how many messages are visible, hears `1`, and asks the platform for a worker execution.",
+          "focus": ["queue", "scaler", "worker"],
+          "edges": ["poll", "depth", "scale"],
+          "dim": ["cron", "producer"],
+          "state": ["depth 1", "worker starting"]
+        },
+        {
+          "id": "claim",
+          "title": "The store says what the work actually is",
+          "clock": "12:00:46",
+          "body": "The worker takes the message with a **peek-lock** — hidden from everyone else for five minutes, not deleted. Then it asks the store to claim a batch in a single indivisible step.\n\nThat atomic claim, not the queue, is what makes double processing impossible.",
+          "notes": [
+            { "title": "Why the message stays empty", "body": "The store is the single source of truth and the message is only a nudge, so the two can never disagree." }
+          ],
+          "focus": ["worker", "queue", "store"],
+          "edges": ["lock", "claim", "rows"],
+          "dim": ["cron", "producer", "scaler"],
+          "state": ["lock 5:00", "1 row claimed"]
+        },
+        {
+          "id": "settle",
+          "title": "Do the work, then close the loop",
+          "clock": "12:00:52",
+          "body": "The worker writes its result and then tells the queue **Complete()** — done, delete it. This is the first moment the message is truly removed rather than hidden.\n\nFinishing the work is not enough; until the queue is told, it will hand the message to someone else in five minutes.",
+          "notes": [
+            { "title": "Three endings", "body": "Complete deletes it. Abandon puts it back for a retry. Dead-letter parks it for a human after the last attempt." }
+          ],
+          "focus": ["worker", "store", "queue"],
+          "edges": ["write", "complete"],
+          "dim": ["cron", "producer", "scaler"],
+          "state": ["message deleted"]
+        },
+        {
+          "id": "next",
+          "title": "Knock the next door, then disappear",
+          "clock": "12:00:53",
+          "body": "The same move, one door along: a new message to the next stage, and the worker exits. The scaler sees an empty queue and scales back to zero.\n\nNothing is running anywhere.",
+          "focus": ["worker", "downstream"],
+          "edges": ["handoff"],
+          "dim": ["cron", "producer", "scaler", "queue", "store"],
+          "state": ["nothing running", "cost zero"]
+        }
+      ]
+    }
+  },
+  "participants": [
+    { "id": "cron", "type": "external", "label": "Scheduler", "sublabel": "cron */5" },
+    { "id": "producer", "type": "backend", "label": "Producer", "sublabel": "ingest job" },
+    { "id": "queue", "type": "messagebus", "label": "Stage Queue", "sublabel": "dedup + lock" },
+    { "id": "scaler", "type": "cloud", "label": "Scaler", "sublabel": "polls depth" },
+    { "id": "worker", "type": "backend", "label": "Worker", "sublabel": "event job" },
+    { "id": "store", "type": "database", "label": "Store", "sublabel": "atomic claim" },
+    { "id": "downstream", "type": "messagebus", "label": "Next Queue", "sublabel": "next stage" }
+  ],
+  "segments": [
+    { "from": 150, "to": 250, "label": "Wake and knock" },
+    { "from": 258, "to": 348, "label": "Poll and start" },
+    { "from": 356, "to": 500, "label": "Lock, claim, settle" }
+  ],
+  "messages": [
+    { "id": "fire", "from": "cron", "to": "producer", "y": 165, "label": "cron fires", "variant": "emphasis" },
+    { "id": "enqueue", "from": "producer", "to": "queue", "y": 195, "label": "enqueue, visible at +30s", "variant": "emphasis" },
+    { "id": "exit1", "from": "producer", "to": "cron", "y": 225, "label": "exit 0", "variant": "return" },
+    { "id": "poll", "from": "scaler", "to": "queue", "y": 270, "label": "poll depth", "variant": "default" },
+    { "id": "depth", "from": "queue", "to": "scaler", "y": 298, "label": "depth 1", "variant": "return" },
+    { "id": "scale", "from": "scaler", "to": "worker", "y": 326, "label": "start execution", "variant": "emphasis" },
+    { "id": "lock", "from": "worker", "to": "queue", "y": 370, "label": "peek-lock 5m", "variant": "default" },
+    { "id": "claim", "from": "worker", "to": "store", "y": 398, "label": "claim batch", "variant": "emphasis" },
+    { "id": "rows", "from": "store", "to": "worker", "y": 426, "label": "1 row", "variant": "return" },
+    { "id": "write", "from": "worker", "to": "store", "y": 454, "label": "write result", "variant": "default" },
+    { "id": "complete", "from": "worker", "to": "queue", "y": 482, "label": "Complete()", "variant": "security" },
+    { "id": "handoff", "from": "worker", "to": "downstream", "y": 510, "label": "enqueue next", "variant": "dashed" }
+  ],
+  "activations": [
+    { "participant": "producer", "from": 160, "to": 230, "type": "backend" },
+    { "participant": "scaler", "from": 265, "to": 332, "type": "cloud" },
+    { "participant": "queue", "from": 190, "to": 488, "type": "messagebus" },
+    { "participant": "worker", "from": 326, "to": 516, "type": "backend" },
+    { "participant": "store", "from": 393, "to": 460, "type": "database" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "What the queue supplies", "items": ["Duplicate detection collapses repeated knocks", "Scheduled delivery is the debounce", "Peek-lock survives a crashed worker"] },
+    { "dot": "amber", "title": "What the store supplies", "items": ["The atomic claim makes double work impossible", "The message never carries the record"] }
+  ]
+}
