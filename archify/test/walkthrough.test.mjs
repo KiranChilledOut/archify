@@ -153,6 +153,12 @@ test('the viewer template carries the walkthrough contract once', () => {
   assert.match(template, /Archify\.exportMenu\.run\('svg'\)/);
   assert.match(template, /Archify\.exportMenu\.run\('png'\)/);
   assert.match(template, /@media \(prefers-reduced-motion: reduce\) \{\s*\.walkthrough-flow-token \{ animation: none; opacity: 0; \}/);
+  // The Governor rewrites data-motion on every render, including renders caused by
+  // this module's own claim/release. Reacting to an unchanged value re-entered
+  // renderCarriers forever on trace-capable diagrams and blocked page load.
+  assert.match(template, /if \(!open \|\| refreshing\) return;\s*var key = motionStateKey\(\);\s*if \(key === lastMotionState\) return;/, 'motion observer must ignore unchanged rewrites');
+  assert.match(template, /if \(refreshing\) return false;\s*refreshing = true;/, 'renderCarriers must be re-entrancy guarded');
+  assert.match(template, /if \(Archify\.motionGovernor && Archify\.motionGovernor\.capable\) return !Archify\.motionGovernor\.isPaused\(\);\s*return true;/, 'flow consults the Governor only when it is capable');
 });
 
 test('the packaged queue-pipeline example validates at showcase and renders its walkthrough', () => {

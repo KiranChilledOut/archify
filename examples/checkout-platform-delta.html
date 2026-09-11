@@ -16276,6 +16276,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       var statusTimer = null;
       var pipButtons = [];
       var reducedMotionQuery = window.matchMedia ? window.matchMedia(&#39;(prefers-reduced-motion: reduce)&#39;) : null;
+      var refreshing = false;
+      var lastMotionState = null;
 
       try { payload = JSON.parse(data ? data.textContent : &#39;null&#39;); } catch (_) { payload = null; }
       steps = payload &amp;&amp; Array.isArray(payload.steps) ? payload.steps.filter(function (step) {
@@ -16375,7 +16377,20 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       }
       // Continuous traffic: the Story carrier, made to loop. Each active
       // relationship receives staggered tokens riding its own authored path.
+      function motionStateKey() {
+        var html = document.documentElement;
+        return (html.getAttribute(&#39;data-motion&#39;) || &#39;&#39;) + &#39;|&#39; + (html.getAttribute(&#39;data-embed&#39;) || &#39;&#39;);
+      }
       function renderCarriers(activeEdges) {
+        // Claiming or releasing the Governor token makes it rewrite data-motion,
+        // which the observer below would otherwise treat as a new state and
+        // re-enter here forever on trace-capable diagrams.
+        if (refreshing) return false;
+        refreshing = true;
+        try { return renderCarriersNow(activeEdges); }
+        finally { lastMotionState = motionStateKey(); refreshing = false; }
+      }
+      function renderCarriersNow(activeEdges) {
         clearCarriers();
         if (!activeEdges.length || !flowAllowed() || !Archify.flowTokens || typeof Archify.flowTokens.create !== &#39;function&#39;) {
           renderFlowStatus(false);
@@ -16592,8 +16607,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           panel.hidden = true;
           trigger.setAttribute(&#39;aria-pressed&#39;, &#39;false&#39;);
           trigger.setAttribute(&#39;aria-label&#39;, viewerText(&#39;viewer.walkthrough.open&#39;));
-          clearCarriers();
+          // Stage marks first: releasing the Governor token republishes its owner
+          // from SVG state, and data-walkthrough-active must already be gone.
           clearStage();
+          clearCarriers();
           renderFlowStatus(false);
           if (options.updateUrl !== false) updateUrl(null);
           if (options.restoreFocus === true) trigger.focus();
@@ -16722,12 +16739,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         reducedMotionQuery.addEventListener(&#39;change&#39;, function () { refreshFlow(); });
       }
       if (window.MutationObserver) {
-        new MutationObserver(function (records) {
-          if (!open) return;
-          var relevant = records.some(function (record) {
-            return record.attributeName === &#39;data-motion&#39; || record.attributeName === &#39;data-embed&#39;;
-          });
-          if (relevant) refreshFlow();
+        // The Governor rewrites data-motion on every render, including renders
+        // caused by this module&#39;s own claim/release. Only a changed value is a
+        // new motion state; an unchanged rewrite is ignored.
+        new MutationObserver(function () {
+          if (!open || refreshing) return;
+          var key = motionStateKey();
+          if (key === lastMotionState) return;
+          lastMotionState = key;
+          refreshFlow();
         }).observe(document.documentElement, { attributes: true, attributeFilter: [&#39;data-motion&#39;, &#39;data-embed&#39;] });
       }
 
@@ -32310,6 +32330,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       var statusTimer = null;
       var pipButtons = [];
       var reducedMotionQuery = window.matchMedia ? window.matchMedia(&#39;(prefers-reduced-motion: reduce)&#39;) : null;
+      var refreshing = false;
+      var lastMotionState = null;
 
       try { payload = JSON.parse(data ? data.textContent : &#39;null&#39;); } catch (_) { payload = null; }
       steps = payload &amp;&amp; Array.isArray(payload.steps) ? payload.steps.filter(function (step) {
@@ -32409,7 +32431,20 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       }
       // Continuous traffic: the Story carrier, made to loop. Each active
       // relationship receives staggered tokens riding its own authored path.
+      function motionStateKey() {
+        var html = document.documentElement;
+        return (html.getAttribute(&#39;data-motion&#39;) || &#39;&#39;) + &#39;|&#39; + (html.getAttribute(&#39;data-embed&#39;) || &#39;&#39;);
+      }
       function renderCarriers(activeEdges) {
+        // Claiming or releasing the Governor token makes it rewrite data-motion,
+        // which the observer below would otherwise treat as a new state and
+        // re-enter here forever on trace-capable diagrams.
+        if (refreshing) return false;
+        refreshing = true;
+        try { return renderCarriersNow(activeEdges); }
+        finally { lastMotionState = motionStateKey(); refreshing = false; }
+      }
+      function renderCarriersNow(activeEdges) {
         clearCarriers();
         if (!activeEdges.length || !flowAllowed() || !Archify.flowTokens || typeof Archify.flowTokens.create !== &#39;function&#39;) {
           renderFlowStatus(false);
@@ -32626,8 +32661,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           panel.hidden = true;
           trigger.setAttribute(&#39;aria-pressed&#39;, &#39;false&#39;);
           trigger.setAttribute(&#39;aria-label&#39;, viewerText(&#39;viewer.walkthrough.open&#39;));
-          clearCarriers();
+          // Stage marks first: releasing the Governor token republishes its owner
+          // from SVG state, and data-walkthrough-active must already be gone.
           clearStage();
+          clearCarriers();
           renderFlowStatus(false);
           if (options.updateUrl !== false) updateUrl(null);
           if (options.restoreFocus === true) trigger.focus();
@@ -32756,12 +32793,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         reducedMotionQuery.addEventListener(&#39;change&#39;, function () { refreshFlow(); });
       }
       if (window.MutationObserver) {
-        new MutationObserver(function (records) {
-          if (!open) return;
-          var relevant = records.some(function (record) {
-            return record.attributeName === &#39;data-motion&#39; || record.attributeName === &#39;data-embed&#39;;
-          });
-          if (relevant) refreshFlow();
+        // The Governor rewrites data-motion on every render, including renders
+        // caused by this module&#39;s own claim/release. Only a changed value is a
+        // new motion state; an unchanged rewrite is ignored.
+        new MutationObserver(function () {
+          if (!open || refreshing) return;
+          var key = motionStateKey();
+          if (key === lastMotionState) return;
+          lastMotionState = key;
+          refreshFlow();
         }).observe(document.documentElement, { attributes: true, attributeFilter: [&#39;data-motion&#39;, &#39;data-embed&#39;] });
       }
 
